@@ -29,6 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGroup("/api/auth").MapAuthEndpoints();
 app.MapGroup("/api/quiz").MapQuizEndpoints();
 app.MapGroup("/api/session").MapSessionEndpoints();
 app.UseHttpsRedirection();
