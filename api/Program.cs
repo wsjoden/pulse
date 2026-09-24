@@ -9,11 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 // Configure database
-builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")));
-
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"))
+);
 
 builder.Services.AddControllers();
+
 // Confgiure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -29,7 +30,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGroup("/api/quiz").MapQuizEndpoints();
+app.MapGroup("/api/session").MapSessionEndpoints();
 app.UseHttpsRedirection();
 
 app.Run();
-
