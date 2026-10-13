@@ -1,5 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Pulse.Api.Data;
 using Pulse.Api.Model;
 
@@ -38,7 +42,7 @@ namespace Pulse.Api.Endpoints
 
             group.MapPost(
                 "/login",
-                async (AppDbContext context, LoginRequest req) =>
+                async (AppDbContext context, IConfiguration configuration, LoginRequest req) =>
                 {
                     var user = await context.Users.FirstOrDefaultAsync(u =>
                         u.Username == req.Username
@@ -50,12 +54,31 @@ namespace Pulse.Api.Endpoints
                     if (result == PasswordVerificationResult.Failed)
                         return Results.Unauthorized();
 
-                    // JWT-generering kommer härnäst
-                    return Results.Ok(new { user.Id, user.Username });
+                    return Results.Ok(new { token = GenerateJwtToken(configuration, user) });
                 }
             );
 
             return group;
+        }
+
+        private static string GenerateJwtToken(IConfiguration configuration, User user)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
