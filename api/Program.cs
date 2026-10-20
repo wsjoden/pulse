@@ -42,6 +42,12 @@ builder
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod()
+    )
+);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -59,5 +65,7 @@ app.UseAuthorization();
 app.MapGroup("/api/auth").MapAuthEndpoints();
 app.MapGroup("/api/quiz").MapQuizEndpoints();
 app.MapGroup("/api/session").MapSessionEndpoints();
+
+app.UseCors();
 
 app.Run();
